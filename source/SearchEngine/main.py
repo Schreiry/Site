@@ -10,25 +10,25 @@ def seed_database():
     session = Session()
     if session.query(AuthorModel).count() == 0:
         # Add test data
-        author1 = AuthorModel(name="Лев Толстой", biography="Русский писатель, автор 'Войны и мира'.")
-        genre1 = GenreModel(name="Роман", description="Эпический роман")
+        author1 = AuthorModel(name="Leo Tolstoy", biography="Russian writer, author of 'War and Peace'.")
+        genre1 = GenreModel(name="Roman", description="An epic novel")
         book1 = BookModel(
-            title="Война и мир",
-            style="Эпический",
-            century="19 век",
-            plot="Эпическая история на фоне Отечественной войны 1812 года",
-            keywords="война, мир, любовь",
+            title="war and peace",
+            style="Epic",
+            century="19th century",
+            plot="An epic story set against the backdrop of the Patriotic War of 1812",
+            keywords="war, peace, love",
             author=author1, genre=genre1
         )
         # Add characters related to the book
-        character1 = CharacterModel(name="Пьер Безухов", description="Один из главных героев романа.")
-        character2 = CharacterModel(name="Наташа Ростова", description="Молодая женщина, олицетворяющая любовь и страсть.")
+        character1 = CharacterModel(name="Pierre Bezukhov", description="One of the main characters in the novel.")
+        character2 = CharacterModel(name="Natasha Rostova", description="A young woman who epitomizes love and passion.")
         book1.characters = [character1, character2]
         
         # Historical event
         event1 = HistoricalEventModel(
-            name="Отечественная война 1812 года",
-            description="Военные действия против наполеоновской армии.",
+            name="Russian War of 1812",
+            description="Military action against Napoleon's army.",
             date="1812"
         )
         
