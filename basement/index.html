@@ -1,0 +1,44 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Site</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        #results { margin-top: 20px; }
+        .book { border-bottom: 1px solid #ccc; padding: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Book search</h1>
+    <input type="text" id="searchBox" placeholder="Start typing the title or keywords" autocomplete="off" style="width: 400px; padding: 8px;">
+    <div id="results"></div>
+
+    <script>
+        const searchBox = document.getElementById('searchBox');
+        const resultsDiv = document.getElementById('results');
+
+        searchBox.addEventListener('input', function() {
+            const query = searchBox.value;
+            if(query.length < 1) {
+                resultsDiv.innerHTML = '';
+                return;
+            }
+            fetch(`/search?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    data.forEach(book => {
+                        const div = document.createElement('div');
+                        div.className = 'book';
+                        div.innerHTML = `<strong>${book.title}</strong> — ${book.author}<br>
+                                         Жанр: ${book.genre} | Стиль: ${book.style} | Эпоха: ${book.century}<br>
+                                         Ключевые слова: ${book.keywords.join(', ')}`;
+                        resultsDiv.appendChild(div);
+                    });
+                });
+        });
+    </script>
+</body>
+</html>
