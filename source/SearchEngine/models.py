@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 class LiteraryEntity(ABC):
     @abstractmethod
     def get_info(self) -> str:
-        """Возвращает строковое представление объекта."""
+        """Возвращает информацию об объекте."""
         pass
 
 class Author(LiteraryEntity):
@@ -35,4 +35,21 @@ class Book(LiteraryEntity):
         self.keywords = keywords  # список ключевых слов
 
     def get_info(self) -> str:
-        return f"Книга: '{self.title}' автор {self.author.name} (Жанр: {self.genre.name})"
+        return f"Книга: '{self.title}', автор: {self.author.name}, жанр: {self.genre.name}"
+
+class Character(LiteraryEntity):
+    def __init__(self, name: str, description: str = ""):
+        self.name = name
+        self.description = description
+
+    def get_info(self) -> str:
+        return f"Персонаж: {self.name}"
+
+class HistoricalEvent(LiteraryEntity):
+    def __init__(self, name: str, description: str = "", date: str = ""):
+        self.name = name
+        self.description = description
+        self.date = date
+
+    def get_info(self) -> str:
+        return f"Историческое событие: {self.name} ({self.date})"

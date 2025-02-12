@@ -1,25 +1,38 @@
 # main.py
 from flask import Flask, request, jsonify, render_template
-from database import init_db, Session, AuthorModel, GenreModel, BookModel
+from database import init_db, Session, AuthorModel, GenreModel, BookModel, CharacterModel, HistoricalEventModel
 from search_engine import SearchEngine
 
 app = Flask(__name__)
-init_db()  # Инициализация базы данных при запуске приложения
+init_db()  # Инициализация базы данных
 
-# Для демонстрации заполним базу тестовыми данными (если таблицы пустые)
 def seed_database():
     session = Session()
     if session.query(AuthorModel).count() == 0:
-        # Создаем тестовых авторов, жанры и книги
+        # Добавляем тестовые данные
         author1 = AuthorModel(name="Лев Толстой", biography="Русский писатель, автор 'Войны и мира'.")
-        genre1 = GenreModel(name="Роман", description="Большой художественный роман")
-        book1 = BookModel(title="Война и мир",
-                          style="Эпический",
-                          century="19 век",
-                          plot="Эпическая история на фоне Отечественной войны 1812 года",
-                          keywords="война, мир, любовь, судьба",
-                          author=author1, genre=genre1)
-        session.add_all([author1, genre1, book1])
+        genre1 = GenreModel(name="Роман", description="Эпический роман")
+        book1 = BookModel(
+            title="Война и мир",
+            style="Эпический",
+            century="19 век",
+            plot="Эпическая история на фоне Отечественной войны 1812 года",
+            keywords="война, мир, любовь",
+            author=author1, genre=genre1
+        )
+        # Добавляем персонажей, связанных с книгой
+        character1 = CharacterModel(name="Пьер Безухов", description="Один из главных героев романа.")
+        character2 = CharacterModel(name="Наташа Ростова", description="Молодая женщина, олицетворяющая любовь и страсть.")
+        book1.characters = [character1, character2]
+        
+        # Историческое событие
+        event1 = HistoricalEventModel(
+            name="Отечественная война 1812 года",
+            description="Военные действия против наполеоновской армии.",
+            date="1812"
+        )
+        
+        session.add_all([author1, genre1, book1, character1, character2, event1])
         session.commit()
     session.close()
 
@@ -29,27 +42,53 @@ search_engine = SearchEngine()
 
 @app.route('/')
 def index():
-    # Отображаем главную страницу с формой поиска
+    """Отображает главную страницу с формой поиска."""
     return render_template('index.html')
 
-@app.route('/search')
+@app.route('/search', methods=['GET'])
 def search():
+    """
+    API-эндпоинт для поиска.
+    Принимает GET-параметр 'q' (запрос пользователя) и возвращает найденные объекты в формате JSON.
+    """
     query = request.args.get('q', '')
-    results = search_engine.search_books(query)
-    # Преобразуем результаты в удобный для JSON формат
-    books = []
-    for book in results:
-        books.append({
-            'id': book.id,
-            'title': book.title,
-            'author': book.author.name if book.author else "",
-            'genre': book.genre.name if book.genre else "",
-            'style': book.style,
-            'century': book.century,
-            'plot': book.plot,
-            'keywords': [kw.strip() for kw in book.keywords.split(',')] if book.keywords else []
-        })
-    return jsonify(books)
+    results = search_engine.search(query)
+    output = []
+    for item in results:
+        item_type = ""
+        if hasattr(item, 'title'):
+            item_type = "book"
+            info = {
+                'id': item.id,
+                'title': item.title,
+                'author': item.author.name if item.author else "",
+                'genre': item.genre.name if item.genre else "",
+                'style': item.style,
+                'century': item.century,
+                'plot': item.plot,
+                'keywords': [kw.strip() for kw in item.keywords.split(',')] if item.keywords else []
+            }
+        elif hasattr(item, 'description') and not hasattr(item, 'title'):
+            # Различаем персонажей и исторические события
+            if hasattr(item, 'date'):
+                item_type = "historical_event"
+                info = {
+                    'id': item.id,
+                    'name': item.name,
+                    'description': item.description,
+                    'date': item.date
+                }
+            else:
+                item_type = "character"
+                info = {
+                    'id': item.id,
+                    'name': item.name,
+                    'description': item.description
+                }
+        else:
+            info = {}
+        output.append({'type': item_type, 'data': info})
+    return jsonify(output)
 
 if __name__ == '__main__':
     app.run(debug=True)

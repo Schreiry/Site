@@ -1,18 +1,18 @@
 <!-- templates/index.html -->
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="eng">
 <head>
     <meta charset="UTF-8">
     <title>Site</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
         #results { margin-top: 20px; }
-        .book { border-bottom: 1px solid #ccc; padding: 10px 0; }
+        .result { border-bottom: 1px solid #ccc; padding: 10px 0; }
     </style>
 </head>
 <body>
-    <h1>Book search</h1>
-    <input type="text" id="searchBox" placeholder="Start typing the title or keywords" autocomplete="off" style="width: 400px; padding: 8px;">
+    <h1>Library Search</h1>
+    <input type="text" id="searchBox" placeholder="Enter a query to search for..." autocomplete="off" style="width: 400px; padding: 8px;">
     <div id="results"></div>
 
     <script>
@@ -29,12 +29,22 @@
                 .then(response => response.json())
                 .then(data => {
                     resultsDiv.innerHTML = '';
-                    data.forEach(book => {
+                    data.forEach(item => {
+                        let html = "";
+                        if(item.type === "book") {
+                            html = `<strong>Book:</strong> ${item.data.title} — ${item.data.author} <br>
+                                    <em>genre :</em> ${item.data.genre} | Style: ${item.data.style} | Epoch: ${item.data.century} <br>
+                                    <em>Keywords::</em> ${item.data.keywords.join(', ')}`;
+                        } else if(item.type === "character") {
+                            html = `<strong>Персонаж:</strong> ${item.data.name} <br>
+                                    <em>Описание:</em> ${item.data.description}`;
+                        } else if(item.type === "historical_event") {
+                            html = `<strong>Historic Event:</strong> ${item.data.name} (${item.data.date})<br>
+                                    <em>Description : </em> ${item.data.description}`;
+                        }
                         const div = document.createElement('div');
-                        div.className = 'book';
-                        div.innerHTML = `<strong>${book.title}</strong> — ${book.author}<br>
-                                         Жанр: ${book.genre} | Стиль: ${book.style} | Эпоха: ${book.century}<br>
-                                         Ключевые слова: ${book.keywords.join(', ')}`;
+                        div.className = 'result';
+                        div.innerHTML = html;
                         resultsDiv.appendChild(div);
                     });
                 });
