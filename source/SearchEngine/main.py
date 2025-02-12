@@ -4,12 +4,12 @@ from database import init_db, Session, AuthorModel, GenreModel, BookModel, Chara
 from search_engine import SearchEngine
 
 app = Flask(__name__)
-init_db()  # Инициализация базы данных
+init_db()  # Initialize the database
 
 def seed_database():
     session = Session()
     if session.query(AuthorModel).count() == 0:
-        # Добавляем тестовые данные
+        # Add test data
         author1 = AuthorModel(name="Лев Толстой", biography="Русский писатель, автор 'Войны и мира'.")
         genre1 = GenreModel(name="Роман", description="Эпический роман")
         book1 = BookModel(
@@ -20,12 +20,12 @@ def seed_database():
             keywords="война, мир, любовь",
             author=author1, genre=genre1
         )
-        # Добавляем персонажей, связанных с книгой
+        # Add characters related to the book
         character1 = CharacterModel(name="Пьер Безухов", description="Один из главных героев романа.")
         character2 = CharacterModel(name="Наташа Ростова", description="Молодая женщина, олицетворяющая любовь и страсть.")
         book1.characters = [character1, character2]
         
-        # Историческое событие
+        # Historical event
         event1 = HistoricalEventModel(
             name="Отечественная война 1812 года",
             description="Военные действия против наполеоновской армии.",
@@ -42,14 +42,14 @@ search_engine = SearchEngine()
 
 @app.route('/')
 def index():
-    """Отображает главную страницу с формой поиска."""
+    """Displays the main page with the search form."""
     return render_template('index.html')
 
 @app.route('/search', methods=['GET'])
 def search():
     """
-    API-эндпоинт для поиска.
-    Принимает GET-параметр 'q' (запрос пользователя) и возвращает найденные объекты в формате JSON.
+    API endpoint for search.
+    Accepts GET parameter 'q' (user query) and returns found objects in JSON format.
     """
     query = request.args.get('q', '')
     results = search_engine.search(query)
@@ -69,7 +69,7 @@ def search():
                 'keywords': [kw.strip() for kw in item.keywords.split(',')] if item.keywords else []
             }
         elif hasattr(item, 'description') and not hasattr(item, 'title'):
-            # Различаем персонажей и исторические события
+            # Distinguish between characters and historical events
             if hasattr(item, 'date'):
                 item_type = "historical_event"
                 info = {

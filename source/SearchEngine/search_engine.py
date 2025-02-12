@@ -8,7 +8,7 @@ class SearchEngine:
     def __init__(self):
         self.session = Session()
         self.morph = pymorphy2.MorphAnalyzer()
-        # Простая база синонимов для демонстрации (можно расширять)
+        # Simple synonym base for demonstration (can be expanded)
         self.synonyms = {
             'война': ['битва', 'конфликт'],
             'любовь': ['страсть', 'романтика']
@@ -16,7 +16,7 @@ class SearchEngine:
     
     def normalize_text(self, text: str) -> str:
         """
-        Приводит текст к нижнему регистру и нормализует каждое слово с помощью морфологического анализа.
+        Converts text to lowercase and normalizes each word using morphological analysis.
         """
         tokens = text.lower().split()
         normalized = [self.morph.parse(token)[0].normal_form for token in tokens]
@@ -24,7 +24,7 @@ class SearchEngine:
     
     def expand_query(self, query: str) -> str:
         """
-        Расширяет запрос, добавляя синонимы из словаря.
+        Expands the query by adding synonyms from the dictionary.
         """
         tokens = query.lower().split()
         expanded_tokens = set(tokens)
@@ -36,14 +36,14 @@ class SearchEngine:
     
     def dummy_ml_ranker(self, items, query_tokens):
         """
-        Демонстрационная функция ранжирования, которая начисляет баллы за совпадения токенов в текстовых полях.
-        В реальной системе здесь может быть обученная модель (например, на основе TF-IDF или нейросети).
+        Demonstration ranking function that scores matches in text fields.
+        In a real system, this could be a trained model (e.g., based on TF-IDF or neural networks).
         """
         ranked = []
         for item in items:
             score = 0
             content = ""
-            # Если объект – книга, учитываем её поля
+            # If the object is a book, consider its fields
             if hasattr(item, 'title'):
                 content += f" {item.title}"
             if hasattr(item, 'keywords') and item.keywords:
@@ -60,21 +60,21 @@ class SearchEngine:
     
     def search(self, query: str):
         """
-        Производит поиск по книгам, персонажам и историческим событиям.
-        Используется морфологический анализ для нормализации запроса, расширение синонимами и демонстрационное ранжирование.
+        Searches for books, characters, and historical events.
+        Uses morphological analysis for query normalization, synonym expansion, and demonstration ranking.
         """
         if not query or len(query.strip()) == 0:
             return []
         
-        # Нормализуем и расширяем запрос
+        # Normalize and expand the query
         normalized_query = self.normalize_text(query)
         expanded_query = self.expand_query(normalized_query)
         query_tokens = expanded_query.split()
         
-        # Формируем шаблоны для поиска (LIKE-паттерны)
+        # Form search patterns (LIKE patterns)
         patterns = [f"%{token}%" for token in query_tokens]
         
-        # Поиск в книгах (загрузка связанных объектов: автор, жанр)
+        # Search in books (load related objects: author, genre)
         books_query = self.session.query(BookModel).options(
             joinedload(BookModel.author), joinedload(BookModel.genre)
         ).filter(
@@ -85,7 +85,7 @@ class SearchEngine:
             )
         ).all()
         
-        # Поиск в персонажах
+        # Search in characters
         characters_query = self.session.query(CharacterModel).filter(
             or_(
                 *[CharacterModel.name.ilike(pattern) for pattern in patterns],
@@ -93,7 +93,7 @@ class SearchEngine:
             )
         ).all()
         
-        # Поиск в исторических событиях
+        # Search in historical events
         events_query = self.session.query(HistoricalEventModel).filter(
             or_(
                 *[HistoricalEventModel.name.ilike(pattern) for pattern in patterns],
@@ -101,7 +101,7 @@ class SearchEngine:
             )
         ).all()
         
-        # Объединяем результаты и применяем ранжирование
+        # Combine results and apply ranking
         all_results = books_query + characters_query + events_query
         ranked_results = self.dummy_ml_ranker(all_results, query_tokens)
         return ranked_results

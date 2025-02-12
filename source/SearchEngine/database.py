@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, relationship, declarative_base
 
 Base = declarative_base()
 
-# Ассоциативная таблица для связи книг и персонажей (многие‑ко‑многим)
+# Association table for many-to-many relationship between books and characters
 book_character_association = Table(
     'book_character', Base.metadata,
     Column('book_id', Integer, ForeignKey('books.id')),
@@ -36,7 +36,7 @@ class BookModel(Base):
     style = Column(String(255))
     century = Column(String(50))
     plot = Column(Text)
-    keywords = Column(Text)  # ключевые слова, разделённые запятыми
+    keywords = Column(Text)  # keywords separated by commas
 
     author = relationship("AuthorModel", back_populates="books")
     genre = relationship("GenreModel", back_populates="books")
@@ -57,10 +57,10 @@ class HistoricalEventModel(Base):
     description = Column(Text)
     date = Column(String(50))
 
-# Создаем подключение к базе данных (SQLite используется для локальной разработки)
+# Create a connection to the database (SQLite is used for local development)
 engine = create_engine('sqlite:///books.db', echo=False)
 Session = sessionmaker(bind=engine)
 
 def init_db():
-    """Инициализирует базу данных, создавая все таблицы (если их нет)."""
+    """Initializes the database by creating all tables (if they don't exist)."""
     Base.metadata.create_all(engine)
