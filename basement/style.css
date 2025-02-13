@@ -10,6 +10,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
 }
 
 
@@ -22,7 +23,8 @@ h1 {
 input {
     height: 30px;
     position: absolute;
-    margin-top: 400px;
+    margin-top: 200px;
+
 }
 
 
