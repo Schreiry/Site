@@ -11,6 +11,7 @@ using namespace Poco::Net;
 using namespace Poco::Util;
 using namespace Poco::JSON;
 using namespace std;
+using std::string;
 
 void SearchRequestHandler::handleRequest(HTTPServerRequest& request, HTTPServerResponse& response) {
     response.setContentType("application/json");
